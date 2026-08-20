@@ -5,7 +5,7 @@ import { Button } from '@/components/ui/Button'
 import { Input } from '@/components/ui/Input'
 import { AuthLayout, AuthLink } from './AuthLayout'
 import { getErrorMessage } from '@/lib/errorMessage'
-import { MOCK_EMAIL, MOCK_PASSWORD } from '@/data/mockDb'
+import { DEMO_EMAIL, DEMO_PASSWORD } from '@/data/api/authApi'
 
 export function LoginPage() {
   const { login } = useAuth()
@@ -42,8 +42,8 @@ export function LoginPage() {
       <button
         type="button"
         onClick={() => {
-          setEmail(MOCK_EMAIL)
-          setPassword(MOCK_PASSWORD)
+          setEmail(DEMO_EMAIL)
+          setPassword(DEMO_PASSWORD)
         }}
         className="mb-4 w-full rounded-lg border border-dashed border-primary/40 bg-primary/5 px-3 py-2 text-sm text-primary transition-colors hover:bg-primary/10"
       >
