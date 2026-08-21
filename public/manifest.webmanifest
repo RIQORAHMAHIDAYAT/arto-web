@@ -1,0 +1,18 @@
+{
+  "name": "ARTO Financial Tracker",
+  "short_name": "ARTO",
+  "description": "Personal financial tracker & daily spending limit manager",
+  "start_url": "/app",
+  "scope": "/",
+  "display": "standalone",
+  "background_color": "#09090B",
+  "theme_color": "#16A34A",
+  "icons": [
+    {
+      "src": "/favicon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ]
+}
