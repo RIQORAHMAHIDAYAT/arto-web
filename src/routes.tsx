@@ -1,4 +1,4 @@
-import { createBrowserRouter } from 'react-router-dom'
+import { createBrowserRouter, Navigate } from 'react-router-dom'
 import { AppShell } from '@/components/layout/AppShell'
 import { NotFoundPage, PublicOnly, RequireAuth } from '@/router'
 import { LoginPage } from '@/pages/auth/LoginPage'
@@ -15,6 +15,10 @@ import { SettingsPage } from '@/pages/SettingsPage'
 
 export const router = createBrowserRouter([
   {
+    path: '/',
+    element: <Navigate to="/app" replace />,
+  },
+  {
     element: <PublicOnly />,
     children: [
       { path: '/auth/login', element: <LoginPage /> },
@@ -25,7 +29,7 @@ export const router = createBrowserRouter([
     element: <RequireAuth />,
     children: [
       {
-        path: '/',
+        path: '/app',
         element: <AppShell />,
         children: [
           { index: true, element: <DashboardPage /> },
@@ -39,6 +43,15 @@ export const router = createBrowserRouter([
           { path: 'settings', element: <SettingsPage /> },
         ],
       },
+      // Legacy redirects to prevent 404 on old bookmarks
+      { path: '/dashboard', element: <Navigate to="/app" replace /> },
+      { path: '/transactions', element: <Navigate to="/app/transactions" replace /> },
+      { path: '/budgets', element: <Navigate to="/app/budgets" replace /> },
+      { path: '/accounts', element: <Navigate to="/app/accounts" replace /> },
+      { path: '/analytics', element: <Navigate to="/app/analytics" replace /> },
+      { path: '/goals', element: <Navigate to="/app/goals" replace /> },
+      { path: '/financial-health', element: <Navigate to="/app/financial-health" replace /> },
+      { path: '/settings', element: <Navigate to="/app/settings" replace /> },
     ],
   },
   { path: '*', element: <NotFoundPage /> },
