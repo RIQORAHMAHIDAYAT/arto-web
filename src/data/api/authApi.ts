@@ -1,8 +1,18 @@
 import type { Credentials, Session, User } from '@/types'
 import { ApiError, clearTokens, getAccessToken, getRefreshToken, request, setTokens } from './client'
 
-export const DEMO_EMAIL = 'demo@arto.id'
-export const DEMO_PASSWORD = 'demopass123'
+function optionalEnv(value: unknown): string | undefined {
+  return typeof value === 'string' && value.length > 0 ? value : undefined
+}
+
+/**
+ * Kredensial akun demo khusus development — dibaca dari env lokal
+ * (.env: VITE_DEMO_EMAIL / VITE_DEMO_PASSWORD, lihat .env.example).
+ * Tidak pernah ter-bundle ke build produksi karena tombol demo
+ * juga digate oleh import.meta.env.DEV di LoginPage.
+ */
+export const DEMO_EMAIL = optionalEnv(import.meta.env.VITE_DEMO_EMAIL)
+export const DEMO_PASSWORD = optionalEnv(import.meta.env.VITE_DEMO_PASSWORD)
 
 interface AuthResponse {
   accessToken: string

@@ -39,16 +39,20 @@ export function LoginPage() {
         </>
       }
     >
-      <button
-        type="button"
-        onClick={() => {
-          setEmail(DEMO_EMAIL)
-          setPassword(DEMO_PASSWORD)
-        }}
-        className="mb-4 w-full rounded-lg border border-dashed border-primary/40 bg-primary/5 px-3 py-2 text-sm text-primary transition-colors hover:bg-primary/10"
-      >
-        Isi otomatis akun demo
-      </button>
+      {import.meta.env.DEV && DEMO_EMAIL && DEMO_PASSWORD && (
+        <button
+          type="button"
+          onClick={() => {
+            if (DEMO_EMAIL && DEMO_PASSWORD) {
+              setEmail(DEMO_EMAIL)
+              setPassword(DEMO_PASSWORD)
+            }
+          }}
+          className="mb-4 w-full rounded-lg border border-dashed border-primary/40 bg-primary/5 px-3 py-2 text-sm text-primary transition-colors hover:bg-primary/10"
+        >
+          Isi otomatis akun demo
+        </button>
+      )}
       <form onSubmit={handleSubmit} className="space-y-4" noValidate>
         <Input label="Email" type="email" required autoComplete="email" value={email} onChange={(e) => setEmail(e.target.value)} />
         <Input label="Password" type="password" required autoComplete="current-password" value={password} onChange={(e) => setPassword(e.target.value)} />
