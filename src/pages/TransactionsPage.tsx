@@ -1,6 +1,7 @@
 import { useMemo, useState, type FormEvent } from 'react'
 import type { Transaction, TransactionFilters } from '@/types'
 import { useAsync } from '@/hooks/useAsync'
+import { getApiUrl, getAccessToken } from '@/data/api/client'
 import { listAccounts } from '@/data/api/accountsApi'
 import { listCategories } from '@/data/api/categoriesApi'
 import {
@@ -64,6 +65,39 @@ export function TransactionsPage() {
 
   const search = (event: FormEvent) => event.preventDefault()
 
+  const handleExport = () => {
+    // Construct query string for export based on current filters
+    const params = new URLSearchParams()
+    if (filters.query) params.append('query', filters.query)
+    if (filters.type) params.append('type', filters.type)
+    if (filters.categoryId) params.append('categoryId', filters.categoryId)
+    if (filters.accountId) params.append('accountId', filters.accountId)
+    
+    // Call the backend export endpoint
+    const token = getAccessToken()
+    const url = `${getApiUrl()}/transactions/export/csv?${params.toString()}`
+    
+    // We can use fetch to download with auth header
+    fetch(url, {
+      headers: {
+        Authorization: `Bearer ${token}`
+      }
+    })
+    .then(res => {
+      if (!res.ok) throw new Error('Gagal mengunduh CSV')
+      return res.blob()
+    })
+    .then(blob => {
+      const a = document.createElement('a')
+      a.href = window.URL.createObjectURL(blob)
+      a.download = 'transactions.csv'
+      document.body.appendChild(a)
+      a.click()
+      document.body.removeChild(a)
+    })
+    .catch(err => window.alert('Gagal mengekspor: ' + err))
+  }
+
   if (loading && !data) return <LoadingBlock label="Memuat transaksi…" />
   if (error && !data) return <ErrorState title="Gagal memuat transaksi" message={getErrorMessage(error)} onRetry={refetch} />
 
@@ -73,10 +107,15 @@ export function TransactionsPage() {
         title="Transaksi"
         description="Catat, cari, dan kelola semua pemasukan serta pengeluaran."
         action={
-          <Button onClick={() => setModal({ open: true, editing: null })}>
-            <PlusIcon className="h-4 w-4" />
-            Catat Transaksi
-          </Button>
+          <div className="flex gap-2">
+            <Button variant="secondary" onClick={handleExport}>
+              📥 Export CSV
+            </Button>
+            <Button onClick={() => setModal({ open: true, editing: null })}>
+              <PlusIcon className="h-4 w-4" />
+              Catat Transaksi
+            </Button>
+          </div>
         }
       />
 
