@@ -5,6 +5,7 @@ import { Input } from '@/components/ui/Input'
 import { Select } from '@/components/ui/Select'
 import { getErrorMessage } from '@/lib/errorMessage'
 import { parseAmountText, sanitizeAmountInput } from '@/lib/currency'
+import { createCategory } from '@/data/api/categoriesApi'
 
 interface TransactionFormProps {
   categories: Category[]
@@ -14,7 +15,7 @@ interface TransactionFormProps {
   loading?: boolean
   error?: string | null
   onCancel?: () => void
-  onSubmit: (input: TransactionInput) => Promise<void>
+  onSubmit: (input: TransactionInput, recurring?: { frequency: string; endDate?: string }) => Promise<void>
 }
 
 export function TransactionForm({
@@ -33,7 +34,13 @@ export function TransactionForm({
   const [accountId, setAccountId] = useState(initial?.accountId ?? '')
   const [date, setDate] = useState(initial?.transactionDate ?? new Date().toISOString().slice(0, 10))
   const [note, setNote] = useState(initial?.note ?? '')
+  const [isRecurring, setIsRecurring] = useState(false)
+  const [frequency, setFrequency] = useState('monthly')
+  const [endDate, setEndDate] = useState('')
   const [submitError, setSubmitError] = useState<string | null>(null)
+  const [showNewCategory, setShowNewCategory] = useState(false)
+  const [newCategoryName, setNewCategoryName] = useState('')
+  const [creatingCategory, setCreatingCategory] = useState(false)
 
   const matchingCategories = useMemo(() => categories.filter((c) => c.type === type), [categories, type])
 
@@ -74,7 +81,10 @@ export function TransactionForm({
       return
     }
     try {
-      await onSubmit({ type, amount: value, categoryId, accountId, transactionDate: date, note })
+      await onSubmit(
+        { type, amount: value, categoryId, accountId, transactionDate: date, note },
+        isRecurring ? { frequency, endDate: endDate || undefined } : undefined
+      )
     } catch (err) {
       setSubmitError(getErrorMessage(err))
     }
@@ -115,14 +125,60 @@ export function TransactionForm({
         onChange={(e) => setAmount(sanitizeAmountInput(e.target.value))}
       />
 
-      <Select
-        label="Kategori"
-        required
-        value={categoryId}
-        onChange={(e) => setCategoryId(e.target.value)}
-        placeholder={matchingCategories.length === 0 ? 'Tidak ada kategori untuk jenis ini' : 'Pilih kategori…'}
-        options={matchingCategories.map((c) => ({ value: c.id, label: `${c.icon} ${c.name}` }))}
-      />
+      {showNewCategory ? (
+        <div className="flex items-end gap-2">
+          <div className="flex-1">
+            <Input
+              label="Kategori Baru"
+              autoFocus
+              placeholder="Misal: Jajan Kucing"
+              value={newCategoryName}
+              onChange={(e) => setNewCategoryName(e.target.value)}
+            />
+          </div>
+          <Button
+            type="button"
+            loading={creatingCategory}
+            onClick={async () => {
+              if (!newCategoryName.trim()) return
+              try {
+                setCreatingCategory(true)
+                const created = await createCategory({ name: newCategoryName.trim(), icon: '📦', type })
+                categories.push(created) // Mutasi lokal agar langsung muncul
+                setCategoryId(created.id)
+                setShowNewCategory(false)
+                setNewCategoryName('')
+              } catch (err) {
+                setSubmitError(getErrorMessage(err))
+              } finally {
+                setCreatingCategory(false)
+              }
+            }}
+          >
+            Buat
+          </Button>
+          <Button type="button" variant="ghost" onClick={() => setShowNewCategory(false)}>Batal</Button>
+        </div>
+      ) : (
+        <Select
+          label="Kategori"
+          required
+          value={categoryId}
+          onChange={(e) => {
+            if (e.target.value === '__NEW__') {
+              setShowNewCategory(true)
+              setCategoryId('')
+            } else {
+              setCategoryId(e.target.value)
+            }
+          }}
+          placeholder={matchingCategories.length === 0 ? 'Tidak ada kategori untuk jenis ini' : 'Pilih kategori…'}
+          options={[
+            { value: '__NEW__', label: '➕ Buat Kategori Baru...' },
+            ...matchingCategories.map((c) => ({ value: c.id, label: `${c.icon} ${c.name}` }))
+          ]}
+        />
+      )}
 
       <Select
         label="Akun"
@@ -135,6 +191,43 @@ export function TransactionForm({
       <Input label="Tanggal" type="date" required value={date} onChange={(e) => setDate(e.target.value)} />
 
       <Input label="Catatan (opsional)" placeholder="misal: makan siang di kantin" value={note} onChange={(e) => setNote(e.target.value)} />
+
+      {!initial && (
+        <div className="rounded-lg border border-border p-4 bg-surface-hover/50 space-y-3">
+          <label className="flex items-center gap-2 cursor-pointer">
+            <input 
+              type="checkbox" 
+              checked={isRecurring} 
+              onChange={(e) => setIsRecurring(e.target.checked)}
+              className="rounded border-input text-primary focus:ring-primary"
+            />
+            <span className="text-sm font-medium">🔁 Jadikan Transaksi Rutin</span>
+          </label>
+          
+          {isRecurring && (
+            <div className="grid grid-cols-2 gap-3 pt-2 border-t border-border mt-2">
+              <Select
+                label="Frekuensi"
+                required
+                value={frequency}
+                onChange={(e) => setFrequency(e.target.value)}
+                options={[
+                  { value: 'daily', label: 'Harian' },
+                  { value: 'weekly', label: 'Mingguan' },
+                  { value: 'monthly', label: 'Bulanan' },
+                  { value: 'yearly', label: 'Tahunan' },
+                ]}
+              />
+              <Input 
+                label="Berhenti Pada (Opsional)" 
+                type="date" 
+                value={endDate} 
+                onChange={(e) => setEndDate(e.target.value)} 
+              />
+            </div>
+          )}
+        </div>
+      )}
 
       {shownError && (
         <p role="alert" className="rounded-lg bg-danger/10 px-3 py-2 text-sm text-danger">

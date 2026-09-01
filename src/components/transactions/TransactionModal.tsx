@@ -11,7 +11,7 @@ interface TransactionModalProps {
   defaultType?: 'income' | 'expense'
   loading?: boolean
   error?: string | null
-  onSubmit: (input: TransactionInput) => Promise<void>
+  onSubmit: (input: TransactionInput, recurring?: { frequency: string; endDate?: string }) => Promise<void>
 }
 
 export function TransactionModal({ open, onClose, categories, accounts, initial, defaultType = 'expense', loading, error, onSubmit }: TransactionModalProps) {
@@ -30,8 +30,8 @@ export function TransactionModal({ open, onClose, categories, accounts, initial,
         loading={loading}
         error={error}
         onCancel={onClose}
-        onSubmit={async (input) => {
-          await onSubmit(input)
+        onSubmit={async (input, recurring) => {
+          await onSubmit(input, recurring)
           onClose()
         }}
       />

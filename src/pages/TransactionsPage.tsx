@@ -12,6 +12,7 @@ import {
 } from '@/data/api/transactionsApi'
 import { PageHeader } from '@/pages/PageHeader'
 import { TransactionModal } from '@/components/transactions/TransactionModal'
+import { RecurringTransactionsModal } from '@/components/transactions/RecurringTransactionsModal'
 import { TransactionRow } from '@/components/transactions/TransactionRow'
 import { Button } from '@/components/ui/Button'
 import { Input } from '@/components/ui/Input'
@@ -29,6 +30,7 @@ export function TransactionsPage() {
   const [filters, setFilters] = useState<TransactionFilters>({})
   const [page, setPage] = useState(1)
   const [modal, setModal] = useState<{ open: boolean; editing: Transaction | null }>({ open: false, editing: null })
+  const [recurringModalOpen, setRecurringModalOpen] = useState(false)
 
   const { data, loading, error, refetch } = useAsync(async () => {
     const [result, cats, accs] = await Promise.all([
@@ -108,6 +110,9 @@ export function TransactionsPage() {
         description="Catat, cari, dan kelola semua pemasukan serta pengeluaran."
         action={
           <div className="flex gap-2">
+            <Button variant="secondary" onClick={() => setRecurringModalOpen(true)}>
+              🔁 Rutin
+            </Button>
             <Button variant="secondary" onClick={handleExport}>
               📥 Export CSV
             </Button>
@@ -222,12 +227,24 @@ export function TransactionsPage() {
           categories={data.cats}
           accounts={data.accs}
           initial={modal.editing}
-          onSubmit={async (input) => {
-            const err = await runMutation(() => (modal.editing ? updateTransaction(modal.editing.id, input) : createTransaction(input)))
+          onSubmit={async (input, recurring) => {
+            const err = await runMutation(async () => {
+              if (modal.editing) {
+                return updateTransaction(modal.editing.id, input)
+              } else {
+                await createTransaction(input)
+                if (recurring) {
+                  // Kita import secara implisit atau pastikan import ada di atas
+                  const { createRecurringTransaction } = await import('@/data/api/transactionsApi')
+                  await createRecurringTransaction({ ...input, ...recurring })
+                }
+              }
+            })
             if (err) throw new Error(err)
           }}
         />
       )}
+      <RecurringTransactionsModal open={recurringModalOpen} onClose={() => setRecurringModalOpen(false)} />
     </div>
   )
 }
