@@ -58,8 +58,8 @@ export function AnalyticsPage() {
   return (
     <div>
       <PageHeader
-        title="Analitik"
-        description="Pahami pola pemasukan dan pengeluaranmu."
+        title="Laporan Bulanan & Analitik"
+        description="Rapor keuangan untuk mengevaluasi prioritas pengeluaran Anda."
         action={
           <div className="flex flex-wrap items-end gap-2">
             <label className="text-sm">
@@ -102,6 +102,23 @@ export function AnalyticsPage() {
         <StatCard label="Selisih (Net)" value={formatRupiah(summary.net)} icon={<span aria-hidden="true">⚖️</span>} tone={summary.net >= 0 ? 'income' : 'expense'} />
         <StatCard label="Rata-rata/hari" value={formatRupiah(summary.averageSpending)} icon={<span aria-hidden="true">📅</span>} tone="info" hint={`${summary.transactionCount} transaksi`} />
       </div>
+
+      {hasExpense && categories.length > 0 && (
+        <Card className="mt-4 border-l-4 border-l-warning">
+          <h2 className="mb-2 text-base font-bold text-foreground">💡 Evaluasi & Prioritas Pengeluaran</h2>
+          <p className="text-sm text-muted leading-relaxed">
+            Pengeluaran terbesar Anda pada periode ini adalah untuk <strong>{categories[0].categoryIcon} {categories[0].categoryName}</strong> sebesar <strong>{formatRupiah(categories[0].amount)}</strong>.
+            {categories.length > 1 && (
+              <>
+                {' '}Sedangkan pengeluaran terkecil adalah <strong>{categories[categories.length - 1].categoryIcon} {categories[categories.length - 1].categoryName}</strong> ({formatRupiah(categories[categories.length - 1].amount)}).
+              </>
+            )}
+          </p>
+          <p className="text-sm text-foreground mt-2 font-medium">
+            → Evaluasi: Apakah pengeluaran <strong>{categories[0].categoryName}</strong> Anda sudah sesuai prioritas, atau bisa ditekan lagi bulan depan untuk dimasukkan ke Tabungan?
+          </p>
+        </Card>
+      )}
 
       <div className="mt-4 grid gap-4 lg:grid-cols-2">
         <Card>
