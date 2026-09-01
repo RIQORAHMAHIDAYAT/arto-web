@@ -5,6 +5,7 @@ import { Input } from '@/components/ui/Input'
 import { Select } from '@/components/ui/Select'
 import { getErrorMessage } from '@/lib/errorMessage'
 import { toISODate } from '@/lib/date'
+import { createCategory } from '@/data/api/categoriesApi'
 
 interface BudgetFormProps {
   categories: Category[]
@@ -23,6 +24,9 @@ export function BudgetForm({ categories, initial, loading, error, onCancel, onSu
   const [periodStart, setPeriodStart] = useState(initial?.periodStart ?? toISODate(new Date(now.getFullYear(), now.getMonth(), 1)))
   const [periodEnd, setPeriodEnd] = useState(initial?.periodEnd ?? toISODate(new Date(now.getFullYear(), now.getMonth() + 1, 0)))
   const [submitError, setSubmitError] = useState<string | null>(null)
+  const [showNewCategory, setShowNewCategory] = useState(false)
+  const [newCategoryName, setNewCategoryName] = useState('')
+  const [creatingCategory, setCreatingCategory] = useState(false)
 
   useEffect(() => {
     if (expenseCategories.length > 0 && !categoryId) setCategoryId(expenseCategories[0].id)
@@ -55,13 +59,59 @@ export function BudgetForm({ categories, initial, loading, error, onCancel, onSu
 
   return (
     <form onSubmit={handleSubmit} className="space-y-4" noValidate>
-      <Select
-        label="Kategori"
-        required
-        value={categoryId}
-        onChange={(e) => setCategoryId(e.target.value)}
-        options={expenseCategories.map((c) => ({ value: c.id, label: `${c.icon} ${c.name}` }))}
-      />
+      {showNewCategory ? (
+        <div className="flex items-end gap-2">
+          <div className="flex-1">
+            <Input
+              label="Kategori Baru"
+              autoFocus
+              placeholder="Misal: Jajan Kucing"
+              value={newCategoryName}
+              onChange={(e) => setNewCategoryName(e.target.value)}
+            />
+          </div>
+          <Button
+            type="button"
+            loading={creatingCategory}
+            onClick={async () => {
+              if (!newCategoryName.trim()) return
+              try {
+                setCreatingCategory(true)
+                const created = await createCategory({ name: newCategoryName.trim(), icon: '📦', type: 'expense' })
+                categories.push(created)
+                setCategoryId(created.id)
+                setShowNewCategory(false)
+                setNewCategoryName('')
+              } catch (err) {
+                setSubmitError(getErrorMessage(err))
+              } finally {
+                setCreatingCategory(false)
+              }
+            }}
+          >
+            Buat
+          </Button>
+          <Button type="button" variant="ghost" onClick={() => setShowNewCategory(false)}>Batal</Button>
+        </div>
+      ) : (
+        <Select
+          label="Kategori"
+          required
+          value={categoryId}
+          onChange={(e) => {
+            if (e.target.value === '__NEW__') {
+              setShowNewCategory(true)
+              setCategoryId('')
+            } else {
+              setCategoryId(e.target.value)
+            }
+          }}
+          options={[
+            { value: '__NEW__', label: '➕ Buat Kategori Baru...' },
+            ...expenseCategories.map((c) => ({ value: c.id, label: `${c.icon} ${c.name}` }))
+          ]}
+        />
+      )}
       <Input
         label="Nominal Budget (Rp)"
         inputMode="numeric"
@@ -70,6 +120,38 @@ export function BudgetForm({ categories, initial, loading, error, onCancel, onSu
         value={amount}
         onChange={(e) => setAmount(e.target.value.replace(/[^\d]/g, ''))}
       />
+      <div className="flex gap-2">
+        <Button
+          type="button"
+          variant="ghost"
+          size="sm"
+          className="h-8 text-xs"
+          onClick={() => {
+            const d = new Date()
+            setPeriodStart(toISODate(new Date(d.getFullYear(), d.getMonth(), 1)))
+            setPeriodEnd(toISODate(new Date(d.getFullYear(), d.getMonth() + 1, 0)))
+          }}
+        >
+          Bulan Ini
+        </Button>
+        <Button
+          type="button"
+          variant="ghost"
+          size="sm"
+          className="h-8 text-xs"
+          onClick={() => {
+            const d = new Date()
+            const day = d.getDay()
+            const diff = d.getDate() - day + (day === 0 ? -6 : 1)
+            const start = new Date(d.setDate(diff))
+            const end = new Date(d.setDate(diff + 6))
+            setPeriodStart(toISODate(start))
+            setPeriodEnd(toISODate(end))
+          }}
+        >
+          Minggu Ini
+        </Button>
+      </div>
       <div className="grid grid-cols-2 gap-3">
         <Input label="Mulai" type="date" required value={periodStart} onChange={(e) => setPeriodStart(e.target.value)} />
         <Input label="Selesai" type="date" required value={periodEnd} onChange={(e) => setPeriodEnd(e.target.value)} />

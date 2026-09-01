@@ -1,5 +1,4 @@
 import { useState } from 'react'
-import { Link } from 'react-router-dom'
 import type { Budget, BudgetInput } from '@/types'
 import { useAsync } from '@/hooks/useAsync'
 import { listCategories } from '@/data/api/categoriesApi'
@@ -16,7 +15,7 @@ import { ErrorState } from '@/components/ui/ErrorState'
 import { EmptyState } from '@/components/ui/EmptyState'
 import { PlusIcon } from '@/components/icons'
 import { formatRupiah } from '@/lib/currency'
-import { formatDateShort } from '@/lib/date'
+import { formatDateShort, daysBetween } from '@/lib/date'
 import { budgetStatus } from '@/domain/budget'
 import { getErrorMessage } from '@/lib/errorMessage'
 
@@ -86,20 +85,28 @@ export function BudgetsPage() {
                 </div>
                 <ProgressBar value={b.utilization} tone={badgeTone} className="mt-4" showLabel />
                 <p className="mt-2 text-sm text-muted">
-                  Terpakai <span className="font-semibold text-foreground">{formatRupiah(b.spent)}</span> dari{' '}
-                  {formatRupiah(b.amount)}
+                  Sisa Jatah: <span className="font-bold text-foreground text-lg">{formatRupiah(Math.max(0, b.amount - b.spent))}</span> (Terpakai {formatRupiah(b.spent)} dari {formatRupiah(b.amount)})
                 </p>
-                {b.utilization >= 1 && <p className="mt-1 text-sm font-semibold text-danger">Budget sudah melebihi batas.</p>}
+                {(() => {
+                  const today = new Date()
+                  const end = new Date(b.periodEnd)
+                  const remainingDays = daysBetween(today, end) + 1
+                  if (remainingDays > 0 && b.utilization < 1) {
+                    const dailyLimit = (b.amount - b.spent) / remainingDays
+                    return (
+                      <div className="mt-3 rounded-lg bg-surface-hover p-3 border border-border">
+                        <p className="text-xs text-muted mb-1">Sisa {remainingDays} hari. Jatah Harian Anda:</p>
+                        <p className="text-xl font-black text-primary">{formatRupiah(dailyLimit)} / hari</p>
+                      </div>
+                    )
+                  }
+                  return null
+                })()}
+                {b.utilization >= 1 && <p className="mt-3 text-sm font-semibold text-danger">Budget sudah melebihi batas.</p>}
                 {b.utilization >= 0.8 && b.utilization < 1 && (
-                  <p className="mt-1 text-sm font-semibold text-warning">Hampir mencapai batas budget.</p>
+                  <p className="mt-3 text-sm font-semibold text-warning">Hampir mencapai batas budget.</p>
                 )}
-                <div className="mt-4 flex items-center justify-between gap-2 border-t border-border pt-3">
-                  <Link
-                    to={`/budgets/${b.id}`}
-                    className="text-sm font-semibold text-secondary hover:underline"
-                  >
-                    Lihat limit harian →
-                  </Link>
+                <div className="mt-4 flex items-center justify-end gap-2 border-t border-border pt-3">
                   <div className="flex gap-1">
                     <button
                       type="button"
