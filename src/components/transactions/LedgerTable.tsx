@@ -48,7 +48,7 @@ export function LedgerTable({ transactions, categories, accounts, onSubmit }: Le
       setIncome('')
       setExpense('')
       setCategoryId('')
-    } catch (err) {
+    } catch {
       alert('Gagal mencatat transaksi')
     } finally {
       setLoading(false)

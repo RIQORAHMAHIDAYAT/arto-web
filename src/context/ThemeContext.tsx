@@ -1,3 +1,4 @@
+/* eslint-disable react/only-export-components */
 import { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState, type ReactNode } from 'react'
 import type { ThemePreference } from '@/types'
 
