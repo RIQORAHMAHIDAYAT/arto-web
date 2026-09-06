@@ -9,6 +9,7 @@ import {
   deleteTransaction,
   listTransactions,
   updateTransaction,
+  createRecurringTransaction
 } from '@/data/api/transactionsApi'
 import { PageHeader } from '@/pages/PageHeader'
 import { TransactionModal } from '@/components/transactions/TransactionModal'
@@ -234,8 +235,6 @@ export function TransactionsPage() {
               } else {
                 await createTransaction(input)
                 if (recurring) {
-                  // Kita import secara implisit atau pastikan import ada di atas
-                  const { createRecurringTransaction } = await import('@/data/api/transactionsApi')
                   await createRecurringTransaction({ ...input, ...recurring })
                 }
               }
