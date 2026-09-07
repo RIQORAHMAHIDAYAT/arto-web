@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useState, type FormEvent } from 'react'
+import { Link } from 'react-router-dom'
 import type { Account, Category, Transaction, TransactionInput, TransactionType } from '@/types'
 import { Button } from '@/components/ui/Button'
 import { Input } from '@/components/ui/Input'
@@ -180,13 +181,23 @@ export function TransactionForm({
         />
       )}
 
-      <Select
-        label="Akun"
-        required
-        value={accountId}
-        onChange={(e) => setAccountId(e.target.value)}
-        options={accounts.map((a) => ({ value: a.id, label: a.name }))}
-      />
+      {accounts.length === 0 ? (
+        <div className="rounded-lg border border-warning/50 bg-warning/10 p-3">
+          <p className="mb-1 text-sm font-semibold text-warning">Belum ada Akun</p>
+          <p className="mb-3 text-xs text-foreground/80">Silakan buat akun (misal: Dompet Cash) terlebih dahulu agar bisa mencatat transaksi.</p>
+          <Link to="/accounts" className="inline-flex h-8 items-center justify-center rounded-md bg-warning px-3 text-xs font-semibold text-white hover:opacity-90 transition-opacity">
+            ➕ Buat Akun Baru
+          </Link>
+        </div>
+      ) : (
+        <Select
+          label="Akun"
+          required
+          value={accountId}
+          onChange={(e) => setAccountId(e.target.value)}
+          options={accounts.map((a) => ({ value: a.id, label: a.name }))}
+        />
+      )}
 
       <Input label="Tanggal" type="date" required value={date} onChange={(e) => setDate(e.target.value)} />
 
