@@ -29,7 +29,7 @@ export function Select({ label, error, hint, options, placeholder, className, id
         id={selectId}
         aria-invalid={error ? true : undefined}
         className={cn(
-          'h-11 w-full appearance-none rounded-lg border bg-surface px-3.5 text-sm text-foreground transition-colors',
+          'h-11 w-full rounded-lg border bg-surface px-3.5 text-sm text-foreground transition-colors',
           error ? 'border-danger' : 'border-border hover:border-muted-foreground',
           className,
         )}
