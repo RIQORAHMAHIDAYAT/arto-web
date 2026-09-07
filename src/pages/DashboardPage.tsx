@@ -39,11 +39,11 @@ export function DashboardPage() {
         <h2 className="text-lg font-bold text-foreground mb-4">RINGKASAN KEUANGAN</h2>
         <div className="flex justify-between items-center py-2 border-b border-border">
           <span className="font-medium">Total Pemasukan</span>
-          <span className="font-semibold text-success">{formatRupiah(summary.totalIncome)}</span>
+          <span className="font-semibold text-success">+{formatRupiah(summary.totalIncome)}</span>
         </div>
         <div className="flex justify-between items-center py-2 border-b border-border">
           <span className="font-medium">Total Pengeluaran</span>
-          <span className="font-semibold text-danger">{formatRupiah(summary.totalExpense)}</span>
+          <span className="font-semibold text-danger">-{formatRupiah(summary.totalExpense)}</span>
         </div>
         <div className="flex justify-between items-center py-2 bg-success/10 -mx-4 px-4 mt-2">
           <span className="font-bold text-foreground">SALDO SAAT INI</span>

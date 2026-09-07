@@ -143,6 +143,7 @@ export interface SpendingChartPoint {
 
 export interface DashboardSummary {
   totalBalance: number
+  totalInitialBalance: number
   totalIncome: number
   totalExpense: number
   periodLabel: string
