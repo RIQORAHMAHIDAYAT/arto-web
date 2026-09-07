@@ -85,7 +85,38 @@ export function LedgerTable({ transactions, categories, accounts, onSubmit }: Le
           </tr>
         </thead>
         <tbody className="divide-y divide-border">
-          {/* Baris Input */}
+          {/* Baris Transaksi (dari terlama ke terbaru) */}
+          {reversed.map(t => {
+            const cat = categories.find(c => c.id === t.categoryId)
+            const balance = balanceMap.get(t.id) || 0
+            return (
+              <tr key={t.id} className="transition-colors hover:bg-surface-hover/50">
+                <td className="p-3 text-muted">{new Date(t.transactionDate).toLocaleDateString('id-ID')}</td>
+                <td className="p-3 font-medium text-foreground">{t.note || '-'}</td>
+                <td className="p-3 text-muted">{cat?.name || '-'}</td>
+                <td className="p-3 text-right font-medium text-success">
+                  {t.type === 'income' ? formatRupiah(t.amount) : '-'}
+                </td>
+                <td className="p-3 text-right font-medium text-danger">
+                  {t.type === 'expense' ? formatRupiah(t.amount) : '-'}
+                </td>
+                <td className="p-3 text-right font-bold text-foreground">
+                  {formatRupiah(balance)}
+                </td>
+                <td className="p-3"></td>
+              </tr>
+            )
+          })}
+          
+          {transactions.length === 0 && (
+            <tr>
+              <td colSpan={7} className="p-6 text-center text-muted">
+                Belum ada transaksi.
+              </td>
+            </tr>
+          )}
+
+          {/* Baris Input (Di Bawah) */}
           <tr className="bg-primary/5">
             <td className="p-2">
               <input 
@@ -154,37 +185,7 @@ export function LedgerTable({ transactions, categories, accounts, onSubmit }: Le
               </button>
             </td>
           </tr>
-
-          {/* Baris Transaksi */}
-          {transactions.map(t => {
-            const cat = categories.find(c => c.id === t.categoryId)
-            const balance = balanceMap.get(t.id) || 0
-            return (
-              <tr key={t.id} className="transition-colors hover:bg-surface-hover/50">
-                <td className="p-3 text-muted">{new Date(t.transactionDate).toLocaleDateString('id-ID')}</td>
-                <td className="p-3 font-medium text-foreground">{t.note || '-'}</td>
-                <td className="p-3 text-muted">{cat?.name || '-'}</td>
-                <td className="p-3 text-right font-medium text-success">
-                  {t.type === 'income' ? formatRupiah(t.amount) : '-'}
-                </td>
-                <td className="p-3 text-right font-medium text-danger">
-                  {t.type === 'expense' ? formatRupiah(t.amount) : '-'}
-                </td>
-                <td className="p-3 text-right font-bold text-foreground">
-                  {formatRupiah(balance)}
-                </td>
-                <td className="p-3"></td>
-              </tr>
-            )
-          })}
           
-          {transactions.length === 0 && (
-            <tr>
-              <td colSpan={7} className="p-6 text-center text-muted">
-                Belum ada transaksi.
-              </td>
-            </tr>
-          )}
         </tbody>
       </table>
     </div>
