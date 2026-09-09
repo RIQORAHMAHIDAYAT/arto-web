@@ -116,7 +116,6 @@ export function AccountsPage() {
       >
         <AccountForm
           initial={modal.editing}
-          accountsCount={data?.length ?? 0}
           onCancel={() => setModal({ open: false, editing: null })}
           onSubmit={async (input: AccountInput) => {
             const err = await runMutation(() => (modal.editing ? updateAccount(modal.editing.id, input) : createAccount(input)))

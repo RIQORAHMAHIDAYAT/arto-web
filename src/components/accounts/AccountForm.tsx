@@ -13,20 +13,17 @@ const TYPES = [
 
 export function AccountForm({
   initial,
-  accountsCount = 0,
   loading,
   onCancel,
   onSubmit,
 }: {
   initial?: Account | null
-  accountsCount?: number
   loading?: boolean
   onCancel?: () => void
   onSubmit: (input: AccountInput) => Promise<void>
 }) {
   const [name, setName] = useState(initial?.name ?? '')
   const [type, setType] = useState<(typeof TYPES)[number]['value']>(initial?.type ?? 'cash')
-  const [initialBalance, setInitialBalance] = useState(initial ? String(initial.initialBalance) : '0')
   const [error, setError] = useState<string | null>(null)
 
   const handleSubmit = async (event: FormEvent) => {
@@ -36,9 +33,8 @@ export function AccountForm({
       setError('Nama akun wajib diisi.')
       return
     }
-    const value = Number(initialBalance.replace(/[^\d]/g, '')) || 0
     try {
-      await onSubmit({ name: name.trim(), type, initialBalance: value })
+      await onSubmit({ name: name.trim(), type, initialBalance: 0 })
     } catch (err) {
       setError(getErrorMessage(err))
     }
