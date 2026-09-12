@@ -101,6 +101,36 @@ export function TransactionsPage() {
     .catch(err => window.alert('Gagal mengekspor: ' + err))
   }
 
+  const handleExportPdf = () => {
+    const params = new URLSearchParams()
+    if (filters.query) params.append('query', filters.query)
+    if (filters.type) params.append('type', filters.type)
+    if (filters.categoryId) params.append('categoryId', filters.categoryId)
+    if (filters.accountId) params.append('accountId', filters.accountId)
+    
+    const token = getAccessToken()
+    const url = `${getApiUrl()}/transactions/export/pdf?${params.toString()}`
+    
+    fetch(url, {
+      headers: {
+        Authorization: `Bearer ${token}`
+      }
+    })
+    .then(res => {
+      if (!res.ok) throw new Error('Gagal mengunduh PDF')
+      return res.blob()
+    })
+    .then(blob => {
+      const a = document.createElement('a')
+      a.href = window.URL.createObjectURL(blob)
+      a.download = 'transactions.pdf'
+      document.body.appendChild(a)
+      a.click()
+      document.body.removeChild(a)
+    })
+    .catch(err => window.alert('Gagal mengekspor: ' + err))
+  }
+
   if (loading && !data) return <LoadingBlock label="Memuat transaksi…" />
   if (error && !data) return <ErrorState title="Gagal memuat transaksi" message={getErrorMessage(error)} onRetry={refetch} />
 
@@ -115,7 +145,10 @@ export function TransactionsPage() {
               🔁 Rutin
             </Button>
             <Button variant="secondary" onClick={handleExport}>
-              📥 Export CSV
+              📥 CSV
+            </Button>
+            <Button variant="secondary" onClick={handleExportPdf}>
+              📄 PDF
             </Button>
             <Button onClick={() => setModal({ open: true, editing: null })}>
               <PlusIcon className="h-4 w-4" />
